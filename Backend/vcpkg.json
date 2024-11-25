@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+    {
+      "name": "drogon",
+      "features": [
+        "orm",
+        "postgres"
+      ]
+    },
+    "libpq"
+  ]
+}
