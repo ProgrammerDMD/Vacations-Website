@@ -18,7 +18,6 @@ export default async function Home({ searchParams }: {
     }
 
     const response: VacationsResponse = query.length > 0 ? await getVacationsByQuery(decodeURIComponent(query), pageNumber, vacationsLimit) : await getVacations(pageNumber, vacationsLimit);
-    console.log(response);
     if (pageNumber >= response.pages) pageNumber = response.pages - 1;
 
     return (

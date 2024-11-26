@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Equal, Euro, User } from "lucide-react";
 import { Vacation } from "../types/types";
+import { MoreDetails } from "./MoreDetails";
 
 export default function VacationCard({ vacation }: {
     vacation: Vacation
@@ -26,7 +27,7 @@ export default function VacationCard({ vacation }: {
                         <span>{Math.trunc(vacation.price)}</span>
                     </div>
                 </div>
-                <Button>More details</Button>
+                <MoreDetails vacation={vacation} />
             </CardFooter>
         </Card>
     );

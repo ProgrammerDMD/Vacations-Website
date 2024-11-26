@@ -40,7 +40,7 @@ export default function PageNavigator({ currentPage, maxPages }: {
                     })()}
                     {nextPage < maxPages &&
                         <PaginationItem>
-                            <PaginationNext href={params.get("query") ? `/?page=${nextPage}&query=${encodeURIComponent(params.get("query") as string)}` : `/?page=${previousPage}` } />
+                            <PaginationNext href={params.get("query") ? `/?page=${nextPage}&query=${encodeURIComponent(params.get("query") as string)}` : `/?page=${nextPage}` } />
                         </PaginationItem>}
                 </PaginationContent>
             </Pagination>
