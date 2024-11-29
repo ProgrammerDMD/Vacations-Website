@@ -7,24 +7,24 @@ export enum Feature {
 }
 
 export interface Vacation {
-    id: string,
-    name: string,
-    description: string,
+    id: string
+    name: string
+    description: string
     location: string
-    price: number,
-    quantity: number,
-    created_at: number,
+    price: number
+    quantity: number
+    created_at: number
     features: Feature[]
 }
 
 export interface PagesResponse {
-    limit: number,
-    pages: number 
+    limit: number
+    pages: number
 }
 
 export interface VacationsResponse {
-    items: Vacation[],
-    limit: number,
+    items: Vacation[]
+    limit: number
     pages: number
 }
 

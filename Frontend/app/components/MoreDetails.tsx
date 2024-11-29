@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -8,8 +9,9 @@ import {
     DialogTitle,
     DialogTrigger
 } from "@/components/ui/dialog";
-import { Feature, Vacation } from "../types/types";
+import { Vacation } from "../types/types";
 import { Dog, Dumbbell, SquareParking, Utensils, Wifi } from "lucide-react";
+import { useCheckout } from "@/app/api/CheckoutController";
 
 const FEATURES_ICONS = [
     <Utensils key="breakfast" />,
@@ -22,6 +24,8 @@ const FEATURES_ICONS = [
 export function MoreDetails({ vacation }: {
     vacation: Vacation
 }) {
+    const checkout = useCheckout();
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -46,7 +50,9 @@ export function MoreDetails({ vacation }: {
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button type="submit">Add to cart</Button>
+                    <Button type="submit" onClick={() => {
+                        checkout.addProduct(vacation.id, 1);
+                    }}>Add to cart</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

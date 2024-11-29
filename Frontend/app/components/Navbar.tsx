@@ -1,4 +1,5 @@
 "use client";
+import { useCheckout } from "@/app/api/CheckoutController";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShoppingBasket } from "lucide-react";
@@ -7,6 +8,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function Navbar() {
     const router = useRouter();
     const params = useSearchParams();
+    const checkout = useCheckout();
+
     return (
         <div className="w-full flex gap-4">
             <Button onClick={() => {
@@ -22,7 +25,7 @@ export default function Navbar() {
             }} />
             <div className="flex items-center justify-center">
                 <ShoppingBasket />
-                <span className="absolute font-light text-sm mt-4 ml-4 bg-black text-white px-1 bg-opacity-70 rounded-sm">0</span>
+                <span className="absolute font-light text-sm mt-4 ml-4 bg-black text-white px-1 bg-opacity-70 rounded-sm">{ checkout.products.length }</span>
             </div>
         </div>
     );
