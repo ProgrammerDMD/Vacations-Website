@@ -7,10 +7,16 @@ include_directories("include")
 
 add_executable(Backend
         main.cpp
+        include/objects/product.h
+        include/objects/vacation.h
+        include/routes/transaction.h
+        include/routes/vacation.h
+        include/utils/api_responses.h
         src/objects/product.cpp
         src/routes/vacation.cpp
         src/utils/api_responses.cpp
         src/objects/vacation.cpp
+        src/routes/transaction.cpp
 )
 
 find_package(Drogon CONFIG REQUIRED)

@@ -13,6 +13,7 @@ import { Vacation } from "../types/types";
 import { Dog, Dumbbell, Equal, Euro, SquareParking, User, Utensils, Wifi } from "lucide-react";
 import { useCheckout } from "@/app/api/CheckoutController";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 const FEATURES_ICONS = [
     <Utensils key="breakfast" />,

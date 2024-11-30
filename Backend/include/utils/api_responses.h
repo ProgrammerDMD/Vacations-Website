@@ -7,6 +7,7 @@ namespace API {
     drogon::HttpResponsePtr notFound();
     drogon::HttpResponsePtr emptyResponse();
     drogon::HttpResponsePtr serverError();
+    drogon::HttpResponsePtr badRequest();
 }
 
 #endif

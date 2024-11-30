@@ -1,16 +1,12 @@
 "use client";
-import { useCheckout } from "@/app/api/CheckoutController";
 import Checkout from "@/app/components/Checkout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingBasket } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Navbar() {
     const router = useRouter();
     const params = useSearchParams();
-    const checkout = useCheckout();
 
     return (
         <div className="w-full flex gap-4">

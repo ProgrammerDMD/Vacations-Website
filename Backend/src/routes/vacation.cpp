@@ -61,7 +61,7 @@ void API::Vacation::getVacationByQuery(const HttpRequestPtr &req, std::function<
                 callback(HttpResponse::newHttpJsonResponse(array));
             }, [callback](const orm::DrogonDbException &exception) {
                 LOG_ERROR << exception.base().what();
-                callback(HttpResponse::newHttpResponse(k500InternalServerError, CT_APPLICATION_JSON));
+                callback(API::serverError());
             }, query);
 }
 
@@ -94,14 +94,14 @@ void API::Vacation::getVacations(const HttpRequestPtr &req, std::function<void(c
             },
             [callback](const orm::DrogonDbException &exception) {
                 LOG_ERROR << exception.base().what();
-                callback(HttpResponse::newHttpResponse(k500InternalServerError, CT_APPLICATION_JSON));
+                callback(API::serverError());
             });
 }
 
 void API::Vacation::getTotalPages(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     std::shared_ptr<Json::Value> body = req->getJsonObject();
     if (!body) {
-        callback(API::emptyResponse());
+        callback(API::badRequest());
         return;
     }
 
@@ -131,7 +131,7 @@ void API::Vacation::getTotalPages(const HttpRequestPtr &req, std::function<void(
                 callback(HttpResponse::newHttpJsonResponse(json));
             }, [callback](const orm::DrogonDbException &exception) {
                 LOG_ERROR << exception.base().what();
-                callback(HttpResponse::newHttpResponse(k500InternalServerError, CT_APPLICATION_JSON));
+                callback(API::serverError());
             }, query);
         } else {
             transaction->execSqlAsync("SELECT COUNT(*) FROM vacations", [callback, limit](const orm::Result &result) {
@@ -149,7 +149,7 @@ void API::Vacation::getTotalPages(const HttpRequestPtr &req, std::function<void(
                 callback(HttpResponse::newHttpJsonResponse(json));
             }, [callback](const orm::DrogonDbException &exception) {
                 LOG_ERROR << exception.base().what();
-                callback(HttpResponse::newHttpResponse(k500InternalServerError, CT_APPLICATION_JSON));
+                callback(API::serverError());
             });
         }
     });

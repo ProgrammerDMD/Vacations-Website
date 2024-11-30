@@ -20,4 +20,10 @@ namespace API {
     drogon::HttpResponsePtr serverError() {
         return drogon::HttpResponse::newHttpResponse(drogon::HttpStatusCode::k500InternalServerError, drogon::ContentType::CT_APPLICATION_JSON);
     }
+
+    drogon::HttpResponsePtr badRequest() {
+        drogon::HttpResponsePtr response = drogon::HttpResponse::newHttpResponse(drogon::HttpStatusCode::k400BadRequest, drogon::ContentType::CT_APPLICATION_JSON);
+        response->setBody("{}");
+        return response;
+    }
 }

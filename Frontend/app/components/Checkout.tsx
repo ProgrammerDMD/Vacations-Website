@@ -20,20 +20,45 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useCheckout } from "@/app/api/CheckoutController";
+import { Product, useCheckout } from "@/app/api/CheckoutController";
 import { getVacationsByProducts } from "@/app/api/VacationsController";
 import { Vacation } from "@/app/types/types";
 import { useEffect, useState } from "react";
 import { Euro, ShoppingBasket } from "lucide-react";
+import { create } from "zustand";
+import { completeCheckout } from "@/app/api/TransactionsController";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-function CheckoutAlert({ price, quantity } : {
+interface PurchaseState {
+    dialogOpen: boolean
+    alertOpen: boolean
+    purchasing: boolean
+    setDialogOpen: (value: boolean) => void
+    setAlertOpen: (value: boolean) => void
+    setPurchasing: (value: boolean) => void
+}
+
+export const usePurchaseState = create<PurchaseState>((set) => ({
+    dialogOpen: false,
+    alertOpen: false,
+    purchasing: false,
+    setDialogOpen: (value: boolean) => set({ dialogOpen: value }),
+    setAlertOpen: (value: boolean) => set({ alertOpen: value }),
+    setPurchasing: (value: boolean) => set({ purchasing: value }),
+}));
+
+function CheckoutAlert({ price, quantity }: {
     price: number,
     quantity: number
 }) {
+    const checkout = useCheckout();
+    const state = usePurchaseState();
+    const router = useRouter();
     return (
-        <AlertDialog>
+        <AlertDialog open={state.alertOpen}>
             <AlertDialogTrigger asChild>
-                <Button>Purchase</Button>
+                <Button onClick={() => state.setAlertOpen(true)}>Purchase</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -41,8 +66,34 @@ function CheckoutAlert({ price, quantity } : {
                     <AlertDialogDescription>You will purchase {quantity} seats for a total of €{price}.</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Continue</AlertDialogAction>
+                    <AlertDialogCancel disabled={state.purchasing} onClick={() => state.setAlertOpen(false)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction disabled={state.purchasing} onClick={() => {
+                        state.setPurchasing(true);
+                        completeCheckout(checkout.products).then(value => {
+                            if (value) {
+                                toast("Checkout completed", {
+                                    description: `You bought x${quantity} seats for ${price.toFixed(2)}.`,
+                                });
+                                router.refresh();
+                                checkout.clear();
+                            } else {
+                                toast("Checkout failed", {
+                                    description: `You can't purchase this many amount of seats.`,
+                                });
+                            }
+                            state.setPurchasing(false);
+                            state.setAlertOpen(false);
+                            state.setDialogOpen(false);
+                        }).catch(reason => {
+                            console.log(reason);
+                            state.setPurchasing(false);
+                            state.setAlertOpen(false);
+                            state.setDialogOpen(false);
+                            toast("Checkout failed", {
+                                description: `An unknown error occurred during transaction.`,
+                            });
+                        })
+                    }}>Continue</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -53,6 +104,7 @@ export default function Checkout() {
     const checkout = useCheckout();
     const [vacations, setVacations] = useState<Vacation[]>([]);
     const [details, setDetails] = useState<{ price: number, quantity: number }>({ price: 0, quantity: 0 });
+    const state = usePurchaseState();
 
     useEffect(() => {
         getVacationsByProducts(checkout.products).then(result => {
@@ -73,8 +125,11 @@ export default function Checkout() {
     }, [checkout.products]);
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
+        <Dialog open={state.dialogOpen} 
+            onOpenChange={(isOpen) => {
+                state.setDialogOpen(isOpen);
+            }}>
+            <DialogTrigger asChild onClick={() => state.setDialogOpen(true)}>
                 <div className="flex items-center justify-center cursor-pointer">
                     <ShoppingBasket />
                     <span className="absolute font-light text-sm mt-4 ml-4 bg-black text-white px-1 bg-opacity-70 rounded-sm">{checkout.products.length}</span>
@@ -110,7 +165,7 @@ export default function Checkout() {
                         <Button variant="outline" type="submit" onClick={() => {
                             checkout.clear();
                         }}>Clear</Button>
-                        <CheckoutAlert price={details.price} quantity={details.quantity}  />
+                        <CheckoutAlert price={details.price} quantity={details.quantity} />
                     </DialogFooter>
                 }
             </DialogContent>
