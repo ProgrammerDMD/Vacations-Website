@@ -12,6 +12,7 @@ import {
 import { Vacation } from "../types/types";
 import { Dog, Dumbbell, SquareParking, Utensils, Wifi } from "lucide-react";
 import { useCheckout } from "@/app/api/CheckoutController";
+import { toast } from "sonner";
 
 const FEATURES_ICONS = [
     <Utensils key="breakfast" />,
@@ -52,6 +53,13 @@ export function MoreDetails({ vacation }: {
                 <DialogFooter>
                     <Button type="submit" onClick={() => {
                         checkout.addProduct(vacation.id, 1);
+                        toast("Added to cart", {
+                            description: `x1 '${vacation.name}' for €${vacation.price}`,
+                            action: {
+                                label: "Undo",
+                                onClick: () => checkout.removeProduct(vacation.id, 1)
+                            }
+                        });
                     }}>Add to cart</Button>
                 </DialogFooter>
             </DialogContent>

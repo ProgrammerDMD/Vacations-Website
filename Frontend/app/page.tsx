@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import { getVacations, getVacationsByQuery } from "./api/VacationsController";
 import Navbar from "./components/Navbar";
 import PageNavigator from "./components/PageNavigator";
@@ -35,6 +36,7 @@ export default async function Home({ searchParams }: {
                 })()}
             </div>
             <PageNavigator currentPage={pageNumber} maxPages={response.pages} />
+            <Toaster />
         </div>
     );
 }

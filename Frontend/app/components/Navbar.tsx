@@ -3,6 +3,7 @@ import { useCheckout } from "@/app/api/CheckoutController";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShoppingBasket } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Navbar() {
@@ -23,10 +24,10 @@ export default function Navbar() {
                     router.push(`/?page=0&query=${query}`)
                 }
             }} />
-            <div className="flex items-center justify-center">
+            <Link href="/checkout" className="flex items-center justify-center">
                 <ShoppingBasket />
                 <span className="absolute font-light text-sm mt-4 ml-4 bg-black text-white px-1 bg-opacity-70 rounded-sm">{ checkout.products.length }</span>
-            </div>
+            </Link>
         </div>
     );
 }
