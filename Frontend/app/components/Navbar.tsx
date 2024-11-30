@@ -1,5 +1,6 @@
 "use client";
 import { useCheckout } from "@/app/api/CheckoutController";
+import Checkout from "@/app/components/Checkout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShoppingBasket } from "lucide-react";
@@ -24,10 +25,7 @@ export default function Navbar() {
                     router.push(`/?page=0&query=${query}`)
                 }
             }} />
-            <Link href="/checkout" className="flex items-center justify-center">
-                <ShoppingBasket />
-                <span className="absolute font-light text-sm mt-4 ml-4 bg-black text-white px-1 bg-opacity-70 rounded-sm">{ checkout.products.length }</span>
-            </Link>
+            <Checkout />
         </div>
     );
 }

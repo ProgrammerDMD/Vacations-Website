@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Equal, Euro, User } from "lucide-react";
 import { Vacation } from "../types/types";
@@ -11,7 +10,7 @@ export default function VacationCard({ vacation }: {
         <Card className="w-72 m-auto">
             <CardHeader>
                 <CardTitle>{vacation.name}</CardTitle>
-                <CardDescription>{vacation.location}</CardDescription>
+                <CardDescription>{vacation.location} ({vacation.quantity} seats)</CardDescription>
             </CardHeader>
             <CardContent>
                 <p>{vacation.description}</p>
@@ -24,7 +23,7 @@ export default function VacationCard({ vacation }: {
                     <Equal />
                     <div className="flex">
                         <Euro />
-                        <span>{Math.trunc(vacation.price)}</span>
+                        <span>{vacation.price.toFixed(2)}</span>
                     </div>
                 </div>
                 <MoreDetails vacation={vacation} />

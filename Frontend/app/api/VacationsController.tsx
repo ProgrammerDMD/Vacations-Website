@@ -1,5 +1,35 @@
 "use server";
+import { Product } from "@/app/api/CheckoutController";
 import { EMPTY_VACATIONS_RESPONSE, PagesResponse, Vacation, VacationsResponse } from "../types/types";
+
+export async function getVacationsByProducts(products: Product[]) : Promise<Vacation[]> {
+    if (products.length == 0) return [];
+
+    const vacations: Vacation[] = [];
+    for (let product of products) {
+        // Bottleneck as it's not in parallel, but I am time constrained.
+        const vacationRequest = await fetch(`http://localhost:3001/vacation/${product.id}`, {
+            method: "GET"
+        });
+        const vacation: Vacation = await vacationRequest.json();
+        vacations.push(vacation);
+    }
+
+    return vacations;
+}
+
+export async function getVacationById(id: string) : Promise<Vacation | undefined> {
+    if (!id) return;
+
+    const vacationRequest = await fetch(`http://localhost:3001/vacation/${id}`, {
+        method: "GET"
+    });
+
+    if (!vacationRequest.ok) return;
+    const vacation: Vacation = await vacationRequest.json();
+
+    return vacation;
+}
 
 export async function getVacationsByQuery(query: string, page: number, limit: number) : Promise<VacationsResponse> {
     if (page < 0 || limit <= 0) return EMPTY_VACATIONS_RESPONSE;

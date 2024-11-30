@@ -10,7 +10,7 @@ import {
     DialogTrigger
 } from "@/components/ui/dialog";
 import { Vacation } from "../types/types";
-import { Dog, Dumbbell, SquareParking, Utensils, Wifi } from "lucide-react";
+import { Dog, Dumbbell, Equal, Euro, SquareParking, User, Utensils, Wifi } from "lucide-react";
 import { useCheckout } from "@/app/api/CheckoutController";
 import { toast } from "sonner";
 
@@ -35,7 +35,7 @@ export function MoreDetails({ vacation }: {
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>{vacation.name}</DialogTitle>
-                    <DialogDescription>{vacation.location}</DialogDescription>
+                    <DialogDescription>{vacation.location} ({vacation.quantity} seats)</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-1">
                     <p>{vacation.description}</p>
@@ -49,12 +49,23 @@ export function MoreDetails({ vacation }: {
                             return items;
                         })()}
                     </div>
+                    <h1 className="font-bold">Price</h1>
+                    <div className="flex gap-2">
+                        <div className="flex">
+                            <span>1x</span><User />
+                        </div>
+                        <Equal />
+                        <div className="flex">
+                            <Euro />
+                            <span>{vacation.price.toFixed(2)}</span>
+                        </div>
+                    </div>
                 </div>
                 <DialogFooter>
                     <Button type="submit" onClick={() => {
                         checkout.addProduct(vacation.id, 1);
                         toast("Added to cart", {
-                            description: `x1 '${vacation.name}' for €${vacation.price}`,
+                            description: `x1 '${vacation.name}' for €${vacation.price.toFixed(2)}`,
                             action: {
                                 label: "Undo",
                                 onClick: () => checkout.removeProduct(vacation.id, 1)
