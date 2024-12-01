@@ -20,37 +20,49 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Product, useCheckout } from "@/app/api/CheckoutController";
+import { useCheckout } from "@/app/api/CheckoutController";
 import { getVacationsByProducts } from "@/app/api/VacationsController";
-import { Vacation } from "@/app/types/types";
+import { Coupon, Vacation } from "@/app/types/types";
 import { useEffect, useState } from "react";
 import { Euro, ShoppingBasket } from "lucide-react";
 import { create } from "zustand";
 import { completeCheckout } from "@/app/api/TransactionsController";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { getCoupon } from "@/app/api/CouponsController";
 
 interface PurchaseState {
     dialogOpen: boolean
     alertOpen: boolean
     purchasing: boolean
+    addingCoupon: boolean
     setDialogOpen: (value: boolean) => void
     setAlertOpen: (value: boolean) => void
     setPurchasing: (value: boolean) => void
+    setAddingCoupon: (value: boolean) => void
 }
 
 export const usePurchaseState = create<PurchaseState>((set) => ({
     dialogOpen: false,
     alertOpen: false,
     purchasing: false,
+    addingCoupon: false,
+    discountAmount: {},
     setDialogOpen: (value: boolean) => set({ dialogOpen: value }),
     setAlertOpen: (value: boolean) => set({ alertOpen: value }),
     setPurchasing: (value: boolean) => set({ purchasing: value }),
+    setAddingCoupon: (value: boolean) => set({ addingCoupon: value }),
 }));
+
+function isCouponValid(coupon: Coupon): boolean {
+    const currentTime = Math.floor(Date.now() / 1000);
+    return currentTime >= coupon.starts_at && currentTime <= coupon.expires_at;
+}
 
 function CheckoutAlert({ price, quantity }: {
     price: number,
-    quantity: number
+    quantity: number,
 }) {
     const checkout = useCheckout();
     const state = usePurchaseState();
@@ -58,16 +70,16 @@ function CheckoutAlert({ price, quantity }: {
     return (
         <AlertDialog open={state.alertOpen}>
             <AlertDialogTrigger asChild>
-                <Button onClick={() => state.setAlertOpen(true)}>Purchase</Button>
+                <Button disabled={state.addingCoupon} onClick={() => state.setAlertOpen(true)}>Purchase</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>You will purchase {quantity} seats for a total of €{price}.</AlertDialogDescription>
+                    <AlertDialogDescription>You will purchase {quantity} seats for a total of €{price.toFixed(2)}.</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={state.purchasing} onClick={() => state.setAlertOpen(false)}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction disabled={state.purchasing} onClick={() => {
+                    <AlertDialogCancel disabled={state.purchasing || state.addingCoupon} onClick={() => state.setAlertOpen(false)}>Cancel</AlertDialogCancel>
+                    <AlertDialogAction disabled={state.purchasing || state.addingCoupon} onClick={() => {
                         state.setPurchasing(true);
                         completeCheckout(checkout.products).then(value => {
                             if (value) {
@@ -100,7 +112,9 @@ function CheckoutAlert({ price, quantity }: {
     );
 }
 
-export default function Checkout() {
+export default function Checkout({ discountAmount }: {
+    discountAmount: Record<string, number>
+}) {
     const checkout = useCheckout();
     const [vacations, setVacations] = useState<Vacation[]>([]);
     const [details, setDetails] = useState<{ price: number, quantity: number }>({ price: 0, quantity: 0 });
@@ -118,14 +132,24 @@ export default function Checkout() {
 
                 quantity += product.quantity;
                 counter += product.quantity * vacation.price;
+
+                if (discountAmount[vacation.id] > 0) {
+                    counter -= discountAmount[vacation.id] * vacation.price * product.quantity;
+                    continue;
+                }
+
+                const coupon = checkout.coupons.find(coupon => coupon.product_id === vacation.id);
+                if (coupon) {
+                    counter -= product.quantity * vacation.price * coupon.amount;
+                }
             }
 
             setDetails({ price: counter, quantity: quantity });
         });
-    }, [checkout.products]);
+    }, [checkout.products, discountAmount]);
 
     return (
-        <Dialog open={state.dialogOpen} 
+        <Dialog open={state.dialogOpen}
             onOpenChange={(isOpen) => {
                 state.setDialogOpen(isOpen);
             }}>
@@ -135,7 +159,7 @@ export default function Checkout() {
                     <span className="absolute font-light text-sm mt-4 ml-4 bg-black text-white px-1 bg-opacity-70 rounded-sm">{checkout.products.length}</span>
                 </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[fit]">
                 <DialogHeader>
                     <DialogTitle>Checkout</DialogTitle>
                     <DialogDescription>You have {checkout.products.length} products in your cart.</DialogDescription>
@@ -148,23 +172,69 @@ export default function Checkout() {
 
                             const quantity = product.quantity;
                             const price = quantity * vacation.price;
+                            const coupon = checkout.coupons.find(coupon => coupon.product_id === vacation.id);
 
-                            return <div className="flex gap-1" key={vacation.id}>
+                            if (discountAmount[vacation.id] > 0 || coupon !== undefined) {
+                                var discountedPrice = price - vacation.price * discountAmount[vacation.id] * product.quantity;
+                                if (coupon) discountedPrice = price - vacation.price * product.quantity * coupon.amount;
+
+                                return <div className="flex gap-1 text-base" key={vacation.id}>
+                                    <span>{quantity}x '{vacation.name}' for</span>
+                                    <span className="flex font-bold"><Euro />{discountedPrice.toFixed(2)},</span>
+                                    <span>was {price.toFixed(2)}</span>
+                                </div>
+                            }
+
+                            return <div className="flex gap-1 text-base" key={vacation.id}>
                                 <span>{quantity}x '{vacation.name}' for</span>
                                 <span className="flex font-bold"><Euro />{price.toFixed(2)}</span>
                             </div>
                         })}
+                        { details.price > 1000 && <span className="font-bold">Free transport included</span> }
                     </div>
-                    {details.price > 0 && <h1 className="flex gap-1">
-                        <span>Your cart amounts to</span>
-                        <span className="flex font-bold"><Euro />{details.price.toFixed(2)}</span>
-                    </h1>}
                 </div>
                 {details.price > 0 &&
-                    <DialogFooter>
-                        <Button variant="outline" type="submit" onClick={() => {
+                    <DialogFooter className="gap-1">
+                        <Button disabled={state.addingCoupon} variant="outline" type="submit" onClick={() => {
                             checkout.clear();
                         }}>Clear</Button>
+                        <Input id="coupon" disabled={state.addingCoupon} type="text" placeholder="Add a coupon" onKeyDown={(event) => {
+                            const element = document.getElementById("coupon") as HTMLInputElement;
+                            const value = element.value.trim();
+
+                            if (event.key == "Enter" && value.length > 0) {
+                                element.value = "";
+                                if (checkout.coupons.find(coupon => coupon.code === value)) {
+                                    toast("Coupon already applied", {
+                                        description: `There is already a coupon applied with this code.`
+                                    });
+                                    return;
+                                }
+                                state.setAddingCoupon(true);
+                                getCoupon(value).then(coupon => {
+                                    const vacation = vacations.find(vacation => vacation.id === coupon?.product_id);
+                                    if (!coupon || !vacation) {
+                                        toast("Coupon not found", {
+                                            description: <span>Coupon <span className="font-bold">{value}</span> wasn't found.</span>
+                                        });
+                                    } else if (!isCouponValid(coupon)) {
+                                        toast("Coupon is expired", {
+                                            description: <span>Coupon <span className="font-bold">{value}</span> is expired.</span>
+                                        });
+                                    } else if (discountAmount[vacation.id] > 0) {
+                                        toast("Can't apply coupon", {
+                                            description: `There's already a discount applied.`
+                                        });
+                                    } else {
+                                        toast("Coupon added", {
+                                            description: <span><span className="font-bold">{(coupon.amount * 100).toFixed(2)}%</span> discount for <span className="font-bold">'{vacation.name}'</span></span>
+                                        });
+                                        checkout.addCoupon(coupon);
+                                    }
+                                    state.setAddingCoupon(false);
+                                })
+                            }
+                        }} />
                         <CheckoutAlert price={details.price} quantity={details.quantity} />
                     </DialogFooter>
                 }

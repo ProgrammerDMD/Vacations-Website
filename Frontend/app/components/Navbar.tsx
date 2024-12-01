@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Navbar() {
+export default function Navbar({ discountAmount }: {
+    discountAmount: Record<string, number>
+}) {
     const router = useRouter();
     const params = useSearchParams();
 
@@ -21,7 +23,7 @@ export default function Navbar() {
                     router.push(`/?page=0&query=${query}`)
                 }
             }} />
-            <Checkout />
+            <Checkout discountAmount={discountAmount} />
         </div>
     );
 }

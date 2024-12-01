@@ -1,7 +1,6 @@
 "use client";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/router";
 
 export const MAX_PAGES_PER_INTERVAL = 10;
 

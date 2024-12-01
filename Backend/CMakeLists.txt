@@ -17,6 +17,14 @@ add_executable(Backend
         src/utils/api_responses.cpp
         src/objects/vacation.cpp
         src/routes/transaction.cpp
+        include/objects/coupon.h
+        src/objects/coupon.cpp
+        include/routes/coupon.h
+        src/routes/coupon.cpp
+        include/objects/discount.h
+        src/objects/discount.cpp
+        include/routes/discount.h
+        src/routes/discount.cpp
 )
 
 find_package(Drogon CONFIG REQUIRED)

@@ -17,9 +17,7 @@ export async function completeCheckout(products: Product[]) : Promise<boolean> {
 
     if (!transactionRequest.ok) return false;
     const response: VacationPurchaseResponse = await transactionRequest.json();
-    const failedPurchases = Object.entries(response).map(value => {
-        if (!value[1]) return value;
-    });
+    const failedPurchases = Object.entries(response).filter(value => !value[1]);
 
     return failedPurchases.length == 0;
 }

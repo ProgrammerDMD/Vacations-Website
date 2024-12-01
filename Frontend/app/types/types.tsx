@@ -6,6 +6,26 @@ export enum Feature {
     FITNESS_CENTER = 4
 }
 
+export interface Coupon {
+    code: string
+    product_id: string
+    amount: number
+    starts_at: number
+    expires_at: number
+}
+
+export interface Discount {
+    id: string
+    product_id: string
+    amount: number
+    starts_at: number
+    expires_at: number
+}
+
+export enum DiscountType {
+    NONE, LIMITED, NORMAL
+}
+
 export interface Vacation {
     id: string
     name: string

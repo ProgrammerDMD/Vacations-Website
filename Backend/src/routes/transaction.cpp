@@ -30,14 +30,14 @@ void API::Transaction::purchaseVacations(const HttpRequestPtr &req, std::functio
         (*purchased)[request.id] = false;
     }
 
-    auto db = app().getDbClient();
+    auto db= app().getDbClient();
     db->newTransactionAsync([callback, requests, purchased](const std::shared_ptr<drogon::orm::Transaction> &transaction) {
         if (!transaction) {
             callback(API::serverError());
             return;
         }
 
-        auto remainingCallbacks = std::make_shared<std::atomic<int>>(requests.size());
+        auto remainingCallbacks = std::make_shared<std::atomic<size_t>>(requests.size());
         auto rollbackFlag = std::make_shared<std::atomic_bool>(false);
 
         for (VacationPurchaseRequest request: requests) {
@@ -55,7 +55,7 @@ void API::Transaction::purchaseVacations(const HttpRequestPtr &req, std::functio
                         }
 
                         Json::Value json;
-                        for (const auto &[id, value]: *purchased) {
+                        for (const auto &[id, value] : *purchased) {
                             json[id] = value;
                         }
                         callback(HttpResponse::newHttpJsonResponse(json));
