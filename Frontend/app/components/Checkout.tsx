@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useCheckout } from "@/app/api/CheckoutController";
 import { getVacationsByProducts } from "@/app/api/VacationsController";
-import { Coupon, Vacation } from "@/app/types/types";
+import { Coupon, LoyaltyType, Vacation } from "@/app/types/types";
 import { useEffect, useState } from "react";
 import { Euro, ShoppingBasket } from "lucide-react";
 import { create } from "zustand";
@@ -30,7 +30,7 @@ import { completeCheckout } from "@/app/api/TransactionsController";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { getCoupon } from "@/app/api/CouponsController";
+import { getCoupon, getLoyalty } from "@/app/api/DiscountsController";
 
 interface PurchaseState {
     dialogOpen: boolean
@@ -81,7 +81,7 @@ function CheckoutAlert({ price, quantity }: {
                     <AlertDialogCancel disabled={state.purchasing || state.addingCoupon} onClick={() => state.setAlertOpen(false)}>Cancel</AlertDialogCancel>
                     <AlertDialogAction disabled={state.purchasing || state.addingCoupon} onClick={() => {
                         state.setPurchasing(true);
-                        completeCheckout(checkout.products).then(value => {
+                        completeCheckout(checkout.products, price).then(value => {
                             if (value) {
                                 toast("Checkout completed", {
                                     description: `You bought x${quantity} seats for ${price.toFixed(2)}.`,
@@ -121,6 +121,12 @@ export default function Checkout({ discountAmount }: {
     const state = usePurchaseState();
 
     useEffect(() => {
+        getLoyalty().then(value => {
+            checkout.setLoyalty(value);
+        });
+    }, [])
+
+    useEffect(() => {
         getVacationsByProducts(checkout.products).then(result => {
             setVacations(result);
 
@@ -132,6 +138,10 @@ export default function Checkout({ discountAmount }: {
 
                 quantity += product.quantity;
                 counter += product.quantity * vacation.price;
+
+                if (checkout.loyalty === LoyaltyType.NORMAL) {
+                    discountAmount[vacation.id] += 0.05;
+                }
 
                 if (discountAmount[vacation.id] > 0) {
                     counter -= discountAmount[vacation.id] * vacation.price * product.quantity;
@@ -146,7 +156,7 @@ export default function Checkout({ discountAmount }: {
 
             setDetails({ price: counter, quantity: quantity });
         });
-    }, [checkout.products, discountAmount]);
+    }, [checkout]);
 
     return (
         <Dialog open={state.dialogOpen}
@@ -191,6 +201,7 @@ export default function Checkout({ discountAmount }: {
                             </div>
                         })}
                         { details.price > 1000 && <span className="font-bold">Free transport included</span> }
+                        { details.price > 0 && checkout.loyalty == LoyaltyType.NORMAL && <span className="font-bold">5% discount for being loyal</span> }
                     </div>
                 </div>
                 {details.price > 0 &&

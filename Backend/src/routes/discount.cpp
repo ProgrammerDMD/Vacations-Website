@@ -1,6 +1,30 @@
+#include <fstream>
 #include "routes/discount.h"
 #include "utils/api_responses.h"
 #include "objects/discount.h"
+#include "jwt/jwt.hpp"
+#include "objects/user.h"
+
+using namespace jwt::params;
+
+long getNow() {
+    return duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch()
+    ).count() / 1000;
+}
+
+std::string formatTimestamp(long timestamp) {
+    std::chrono::duration<long> value(timestamp);
+    std::chrono::time_point<std::chrono::system_clock, std::chrono::duration<long> > tp_seconds(value);
+    std::chrono::system_clock::time_point tp(tp_seconds);
+
+    time_t time = std::chrono::system_clock::to_time_t(tp);
+    std::tm *local_time = std::localtime(&time);
+
+    std::stringstream ss;
+    ss << std::put_time(local_time, "%d/%m/%Y %H:%M:%S");
+    return ss.str();
+}
 
 void API::Discount::getDiscounts(const drogon::HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
     auto db = app().getDbClient();
@@ -15,12 +39,6 @@ void API::Discount::getDiscounts(const drogon::HttpRequestPtr &req, std::functio
         LOG_ERROR << exception.base().what();
         callback(API::serverError());
     });
-}
-
-long getNow() {
-    return duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch()
-    ).count() / 1000;
 }
 
 // Hard code limited discounts
@@ -45,4 +63,64 @@ void API::Discount::getLimitedDiscounts(const drogon::HttpRequestPtr &req, std::
         LOG_ERROR << exception.base().what();
         callback(API::serverError());
     });
+}
+
+void API::Discount::hasLoyaltyCard(const drogon::HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+    if (req->getHeader("Authorization").empty()) {
+        callback(API::notAuthorized());
+        return;
+    }
+
+    jwt::jwt_object jwtToken;
+    try {
+        jwtToken = jwt::decode(req->getHeader("Authorization"), algorithms({"HS256"}), secret("secret"), verify(true));
+    } catch (std::exception &exception) {
+        callback(API::notAuthorized());
+        LOG_ERROR << exception.what();
+        return;
+    }
+
+    auto db = app().getDbClient();
+    db->execSqlAsync("SELECT sum(cost) FROM transactions WHERE user_id=$1",
+         [callback, jwtToken](const drogon::orm::Result &result) {
+             Json::Value value;
+             value["result"] = "none";
+
+             if (result.empty()) {
+                 callback(HttpResponse::newHttpJsonResponse(value));
+                 return;
+             }
+
+             Objects::User user(jwtToken);
+             drogon::orm::Row row = result[0];
+             drogon::orm::Field sum = row["sum"];
+             if (sum.isNull()) {
+                 callback(HttpResponse::newHttpJsonResponse(value));
+                 return;
+             }
+
+             double sumDouble = sum.as<double>();
+             if (sumDouble >= 10000) {
+                 value["result"] = "normal";
+             }
+
+             // I could write this somewhere else, but I am too lazy
+             if (sumDouble > 50000) {
+                 try {
+                     std::ofstream invitation(user.getName() + "-invitatie.txt");
+                     invitation << "Dear, " << user.getName() << std::endl;
+                     invitation << "\nYou are now a VIP client!" << std::endl;
+                     invitation << "\n" << "Sent on " << formatTimestamp(getNow()) << std::endl;
+                     invitation.close();
+                 } catch (std::exception &exception) {
+                     LOG_ERROR << "Couldn't write an invitation!";
+                 }
+             }
+
+             callback(HttpResponse::newHttpJsonResponse(value));
+         },
+         [callback](const drogon::orm::DrogonDbException &exception) {
+             LOG_ERROR << exception.base().what();
+             callback(API::serverError());
+         }, jwtToken.payload().get_claim_value<std::string>("id"));
 }

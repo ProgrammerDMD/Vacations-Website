@@ -8,6 +8,8 @@ namespace API {
     drogon::HttpResponsePtr emptyResponse();
     drogon::HttpResponsePtr serverError();
     drogon::HttpResponsePtr badRequest();
+    drogon::HttpResponsePtr conflict();
+    drogon::HttpResponsePtr notAuthorized();
 }
 
 #endif

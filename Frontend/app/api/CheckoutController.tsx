@@ -1,6 +1,6 @@
-import { Coupon } from "@/app/types/types";
+import { Coupon, LoyaltyType } from "@/app/types/types";
 import { create } from "zustand";
-import { createJSONStorage, persist, StateStorage } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export interface Product {
     id: string
@@ -10,11 +10,13 @@ export interface Product {
 interface Checkout {
     products: Product[]
     coupons: Coupon[]
+    loyalty: LoyaltyType
     addProduct: (id: string, quantity: number) => void
     removeProduct: (id: string, quantity: number) => void
     addCoupon: (coupon: Coupon) => void
     removeCoupon: (code: string) => void
     clear: () => void
+    setLoyalty: (loyalty: LoyaltyType) => void
 }
 
 export const useCheckout = create<Checkout>()(
@@ -22,6 +24,7 @@ export const useCheckout = create<Checkout>()(
         (set, get) => ({
             products: [],
             coupons: [],
+            loyalty: LoyaltyType.NONE,
             addProduct: (id: string, quantity: number) => {
                 if (!id || quantity <= 0) return;
 
@@ -57,6 +60,9 @@ export const useCheckout = create<Checkout>()(
             },
             clear: () => {
                 set({ products: [], coupons: [] });
+            },
+            setLoyalty: (loyalty: LoyaltyType) => {
+                set({ loyalty: loyalty });
             }
         }),
         {

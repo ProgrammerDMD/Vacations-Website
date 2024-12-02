@@ -1,11 +1,12 @@
 "use client";
 import Checkout from "@/app/components/Checkout";
+import { LoyaltyType } from "@/app/types/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Navbar({ discountAmount }: {
-    discountAmount: Record<string, number>
+    discountAmount: Record<string, number>,
 }) {
     const router = useRouter();
     const params = useSearchParams();

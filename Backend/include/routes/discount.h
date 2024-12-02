@@ -11,6 +11,7 @@ namespace API {
         METHOD_LIST_BEGIN
             ADD_METHOD_TO(Discount::getDiscounts, "/discounts", Get);
             ADD_METHOD_TO(Discount::getLimitedDiscounts, "/discounts/limited", Get);
+            ADD_METHOD_TO(Discount::hasLoyaltyCard, "/discounts/loyalty", Get);
         METHOD_LIST_END
 
         void getDiscounts(
@@ -18,6 +19,10 @@ namespace API {
                 std::function<void(const HttpResponsePtr &)> &&callback);
 
         void getLimitedDiscounts(
+                const HttpRequestPtr &req,
+                std::function<void(const HttpResponsePtr &)> &&callback);
+
+        void hasLoyaltyCard(
                 const HttpRequestPtr &req,
                 std::function<void(const HttpResponsePtr &)> &&callback);
     };

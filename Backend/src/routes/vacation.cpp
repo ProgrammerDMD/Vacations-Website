@@ -5,20 +5,21 @@
 
 void API::Vacation::getVacationById(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const std::string &productId) {
     auto db = app().getDbClient();
-    db->execSqlAsync("SELECT id, name, description, quantity, features, location, price, EXTRACT(EPOCH from created_at) as created_at FROM vacations WHERE id=$1",
-                     [callback](const orm::Result &result) {
-                         if (result.empty()) {
-                             callback(API::notFound());
-                             return;
-                         }
+    db->execSqlAsync(
+            "SELECT id, name, description, quantity, features, location, price, EXTRACT(EPOCH from created_at) as created_at FROM vacations WHERE id=$1",
+            [callback](const orm::Result &result) {
+                if (result.empty()) {
+                    callback(API::notFound());
+                    return;
+                }
 
-                         Objects::Vacation vacation(result[0]);
-                         callback(HttpResponse::newHttpJsonResponse(vacation.toJson()));
-                     }, [callback](const orm::DrogonDbException &exception) {
+                Objects::Vacation vacation(result[0]);
+                callback(HttpResponse::newHttpJsonResponse(vacation.toJson()));
+            },
+            [callback](const orm::DrogonDbException &exception) {
                 LOG_ERROR << exception.base().what();
                 callback(HttpResponse::newHttpResponse(k500InternalServerError, CT_APPLICATION_JSON));
-            },
-                     productId);
+            }, productId);
 }
 
 void API::Vacation::getVacationByQuery(const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {

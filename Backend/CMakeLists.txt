@@ -25,12 +25,18 @@ add_executable(Backend
         src/objects/discount.cpp
         include/routes/discount.h
         src/routes/discount.cpp
+        include/objects/user.h
+        include/routes/user.h
+        src/objects/user.cpp
+        src/routes/user.cpp
 )
 
 find_package(Drogon CONFIG REQUIRED)
 find_package(PostgreSQL REQUIRED)
+find_package(cpp-jwt CONFIG REQUIRED)
 
 target_link_libraries(Backend PRIVATE
         Drogon::Drogon
         PostgreSQL::PostgreSQL
+        cpp-jwt::cpp-jwt
 )

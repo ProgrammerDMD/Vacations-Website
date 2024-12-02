@@ -26,4 +26,16 @@ namespace API {
         response->setBody("{}");
         return response;
     }
+
+    drogon::HttpResponsePtr conflict() {
+        drogon::HttpResponsePtr response = drogon::HttpResponse::newHttpResponse(drogon::HttpStatusCode::k409Conflict, drogon::ContentType::CT_APPLICATION_JSON);
+        response->setBody("{}");
+        return response;
+    }
+
+    drogon::HttpResponsePtr notAuthorized() {
+        drogon::HttpResponsePtr response = drogon::HttpResponse::newHttpResponse(drogon::HttpStatusCode::k401Unauthorized, drogon::ContentType::CT_APPLICATION_JSON);
+        response->setBody("{}");
+        return response;
+    }
 }

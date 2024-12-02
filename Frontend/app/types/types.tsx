@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export enum Feature {
     BREAKFAST = 0,
     PRIVATE_PARKING = 1,
@@ -24,6 +26,10 @@ export interface Discount {
 
 export enum DiscountType {
     NONE, LIMITED, NORMAL
+}
+
+export enum LoyaltyType {
+    NONE = "none", NORMAL = "normal"
 }
 
 export interface Vacation {
@@ -55,3 +61,42 @@ export const EMPTY_VACATIONS_RESPONSE = {
     limit: 0,
     pages: 0
 }
+
+export const LoginSchema = z.object({
+    username: z.string().min(3, {
+        message: "Username must be at least 3 characters."
+    }).max(16, {
+        message: "Username must be at most 16 characters."
+    }).regex(/^[0-9A-Za-z]{3,16}$/, {
+        message: "Invalid characters used in the username."
+    }),
+    password: z.string().min(3, {
+        message: "Password must be at least 3 characters."
+    }).max(21, {
+        message: "Password must be at most 21 characters."
+    })
+})
+
+export type LoginSchemaType = z.infer<typeof LoginSchema>;
+
+export const RegisterSchema = z.object({
+    username: z.string().min(3, {
+        message: "Username must be at least 3 characters."
+    }).max(16, {
+        message: "Username must be at most 16 characters."
+    }).regex(/^[0-9A-Za-z]{3,16}$/, {
+        message: "Invalid characters used in the username."
+    }),
+    name: z.string().min(3, {
+        message: "Name must be at least 3 characters."
+    }).max(20, {
+        message: "Name must be at most 20 characters."
+    }),
+    password: z.string().min(3, {
+        message: "Password must be at least 3 characters."
+    }).max(21, {
+        message: "Password must be at most 21 characters."
+    })
+})
+
+export type RegisterSchemaType = z.infer<typeof RegisterSchema>;

@@ -4,7 +4,10 @@ import Navbar from "./components/Navbar";
 import PageNavigator from "./components/PageNavigator";
 import VacationCard from "./components/VacationCard";
 import { Discount, DiscountType, VacationsResponse } from "./types/types";
-import { getDiscounts, getLimitedDiscounts } from "@/app/api/CouponsController";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getDiscounts, getLimitedDiscounts } from "@/app/api/DiscountsController";
 
 export const POSITIVE_NUMBER = /^\d*$/;
 
@@ -21,6 +24,9 @@ function isLimitedDiscountValid(expiresAt: number) {
 export default async function Home({ searchParams }: {
     searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.accessToken) return redirect("/logout");
+
     const { page = '0', query = '' } = await searchParams;
     const vacationsLimit = 10;
 
