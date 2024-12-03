@@ -36,7 +36,7 @@ export function MoreDetails({ vacation, discount, discountAmount }: {
 
     const checkout = useCheckout();
     const newPrice = vacation.price - vacation.price * discountAmount;
-    const discountText = discountAmount > 0 ? ", %" + (discountAmount * 100).toFixed(2) + " discount" : "";
+    const discountText = discountAmount > 0 && discount !== DiscountType.NONE ? ", %" + (discountAmount * 100).toFixed(2) + " discount" : "";
 
     return (
         <Dialog>
@@ -62,7 +62,7 @@ export function MoreDetails({ vacation, discount, discountAmount }: {
                     </div>
                     <h1 className="font-bold">Price</h1>
                     <div className="flex gap-2">
-                        {discountAmount > 0 ?
+                        {discountAmount > 0 && discount !== DiscountType.NONE  ?
                             <>
                                 <div className="flex">
                                     <span>1x</span><User />
@@ -90,7 +90,7 @@ export function MoreDetails({ vacation, discount, discountAmount }: {
                     <Button type="submit" onClick={() => {
                         checkout.addProduct(vacation.id, 1);
                         toast("Added to cart", {
-                            description: `x1 '${vacation.name}' for €${discountAmount > 0 ? newPrice.toFixed(2) : vacation.price.toFixed(2) }`,
+                            description: `x1 '${vacation.name}' for €${discountAmount > 0 && discount !== DiscountType.NONE ? newPrice.toFixed(2) : vacation.price.toFixed(2) }`,
                             action: {
                                 label: "Undo",
                                 onClick: () => checkout.removeProduct(vacation.id, 1)

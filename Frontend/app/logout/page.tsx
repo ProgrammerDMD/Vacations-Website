@@ -8,12 +8,8 @@ export default function LogoutPage() {
     const session = useSession();
     const router = useRouter();
     useEffect(() => {
-        if (!session.data?.accessToken) {
-            signOut({ redirect: false }).then(() => {
-                router.push("/login");
-            });
-        } else {
-            redirect("/");
-        }
+        signOut({ redirect: false }).then(() => {
+            router.push("/login");
+        });
     }, []);
 }

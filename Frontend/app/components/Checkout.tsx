@@ -124,7 +124,7 @@ export default function Checkout({ discountAmount }: {
         getLoyalty().then(value => {
             checkout.setLoyalty(value);
         });
-    }, [])
+    }, []);
 
     useEffect(() => {
         getVacationsByProducts(checkout.products).then(result => {
@@ -137,11 +137,7 @@ export default function Checkout({ discountAmount }: {
                 if (!product) return;
 
                 quantity += product.quantity;
-                counter += product.quantity * vacation.price;
-
-                if (checkout.loyalty === LoyaltyType.NORMAL) {
-                    discountAmount[vacation.id] += 0.05;
-                }
+                counter += vacation.price * product.quantity;
 
                 if (discountAmount[vacation.id] > 0) {
                     counter -= discountAmount[vacation.id] * vacation.price * product.quantity;

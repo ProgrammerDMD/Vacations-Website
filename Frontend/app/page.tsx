@@ -3,11 +3,11 @@ import { getVacations, getVacationsByQuery } from "./api/VacationsController";
 import Navbar from "./components/Navbar";
 import PageNavigator from "./components/PageNavigator";
 import VacationCard from "./components/VacationCard";
-import { Discount, DiscountType, VacationsResponse } from "./types/types";
+import { Discount, DiscountType, LoyaltyType, VacationsResponse } from "./types/types";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getDiscounts, getLimitedDiscounts } from "@/app/api/DiscountsController";
+import { getDiscounts, getLimitedDiscounts, getLoyalty } from "@/app/api/DiscountsController";
 
 export const POSITIVE_NUMBER = /^\d*$/;
 
@@ -40,21 +40,24 @@ export default async function Home({ searchParams }: {
 
     const discounts: Discount[] = await getDiscounts();
     const limitedDiscounts = await getLimitedDiscounts();
+    const loyalty = await getLoyalty();
     const discountTypes: Record<string, DiscountType> = {};
     const discountAmount: Record<string, number> = {};
 
     response.items.forEach(vacation => {
         discountAmount[vacation.id] = 0;
+        if (loyalty === LoyaltyType.NORMAL) discountAmount[vacation.id] = 0.05;
+
         const discount = discounts.find(discount => discount.product_id === vacation.id && isDiscountValid(discount));
         if (discount) {
             discountTypes[vacation.id] = DiscountType.NORMAL;
-            discountAmount[vacation.id] = discount.amount;
+            discountAmount[vacation.id] += discount.amount;
             return;
         }
 
         if (limitedDiscounts[vacation.id] !== undefined && isLimitedDiscountValid(limitedDiscounts[vacation.id])) {
             discountTypes[vacation.id] = DiscountType.LIMITED;
-            discountAmount[vacation.id] = 0.1;
+            discountAmount[vacation.id] += 0.1;
             return;
         }
 

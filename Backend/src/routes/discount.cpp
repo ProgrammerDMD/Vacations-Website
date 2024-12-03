@@ -107,7 +107,7 @@ void API::Discount::hasLoyaltyCard(const drogon::HttpRequestPtr &req, std::funct
              // I could write this somewhere else, but I am too lazy
              if (sumDouble > 50000) {
                  try {
-                     std::ofstream invitation(user.getName() + "-invitatie.txt");
+                     std::ofstream invitation(user.getUsername() + "-invitatie.txt");
                      invitation << "Dear, " << user.getName() << std::endl;
                      invitation << "\nYou are now a VIP client!" << std::endl;
                      invitation << "\n" << "Sent on " << formatTimestamp(getNow()) << std::endl;

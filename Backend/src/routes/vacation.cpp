@@ -40,7 +40,7 @@ void API::Vacation::getVacationByQuery(const HttpRequestPtr &req, std::function<
     unsigned int offset = limit * page;
 
     std::stringstream ss;
-    ss << "SELECT id, name, description, quantity, features, price, location, EXTRACT(EPOCH from created_at) as created_at FROM search_vacations($1) ORDER BY created_at DESC LIMIT ";
+    ss << "SELECT id, name, description, quantity, features, price, location, EXTRACT(EPOCH from created_at) as created_at FROM search_vacations($1) WHERE quantity > 0 ORDER BY created_at DESC LIMIT ";
     ss << limit;
     ss << " OFFSET ";
     ss << offset;
@@ -49,11 +49,6 @@ void API::Vacation::getVacationByQuery(const HttpRequestPtr &req, std::function<
     db->execSqlAsync(
             ss.str(),
             [callback](const orm::Result &result) {
-                if (result.empty()) {
-                    callback(API::emptyResponse());
-                    return;
-                }
-
                 Json::Value array(Json::ValueType::arrayValue);
                 for (auto &row: result) {
                     Objects::Vacation vacation(row);
@@ -72,7 +67,7 @@ void API::Vacation::getVacations(const HttpRequestPtr &req, std::function<void(c
     unsigned int offset = limit * page;
 
     std::stringstream ss;
-    ss << "SELECT id, name, description, quantity, features, price, location, EXTRACT(EPOCH from created_at) as created_at FROM vacations ORDER by created_at DESC LIMIT ";
+    ss << "SELECT id, name, description, quantity, features, price, location, EXTRACT(EPOCH from created_at) as created_at FROM vacations WHERE quantity > 0 ORDER by created_at DESC LIMIT ";
     ss << limit;
     ss << " OFFSET ";
     ss << offset;
@@ -81,11 +76,6 @@ void API::Vacation::getVacations(const HttpRequestPtr &req, std::function<void(c
     db->execSqlAsync(
             ss.str(),
             [callback](const orm::Result &result) {
-                if (result.empty()) {
-                    callback(API::emptyResponse());
-                    return;
-                }
-
                 Json::Value array(Json::ValueType::arrayValue);
                 for (auto &row : result) {
                     Objects::Vacation vacation(row);

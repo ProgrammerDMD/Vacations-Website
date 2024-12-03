@@ -22,7 +22,7 @@ export default function VacationCard({ vacation, discount, discountAmount }: {
     }
     
     const newPrice = vacation.price - vacation.price * discountAmount;
-    const discountText = discountAmount > 0 ? ", %" + (discountAmount * 100).toFixed(2) + " discount" : "";
+    const discountText = discountAmount > 0 && discount !== DiscountType.NONE ? ", %" + (discountAmount * 100).toFixed(2) + " discount" : "";
 
     return (
         <Card className={`w-80 m-auto ${shadow}`}>
@@ -35,7 +35,7 @@ export default function VacationCard({ vacation, discount, discountAmount }: {
             </CardContent>
             <CardFooter className="flex-col gap-3 justify-center">
                 <div className="flex gap-2">
-                    {discountAmount > 0 ?
+                    {discountAmount > 0 && discount !== DiscountType.NONE ?
                         <>
                             <div className="flex">
                                 <span className={`${colorTailwind}`}>1x</span><User color={colorHex} />
