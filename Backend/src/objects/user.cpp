@@ -83,3 +83,7 @@ Json::Value User::toJson() {
     result["password"] = password;
     return result;
 }
+
+bool User::operator==(User &user) {
+    return id == user.id && username == user.username && name == user.name && password == user.password;
+}

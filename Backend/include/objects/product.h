@@ -35,6 +35,10 @@ namespace Objects {
         long long getCreatedAt();
 
         virtual Json::Value toJson();
+
+        Product& operator--();
+
+        Product& operator++();
     };
 }
 #endif

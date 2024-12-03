@@ -50,3 +50,11 @@ Json::Value Discount::toJson() {
     result["expires_at"] = std::to_string(expiresAt);
     return result;
 }
+
+bool Discount::operator>(const Discount &discount) {
+    return amount > discount.amount;
+}
+
+bool Discount::operator>=(const Discount &discount) {
+    return amount >= discount.amount;
+}

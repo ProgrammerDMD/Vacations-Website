@@ -58,3 +58,13 @@ Json::Value Product::toJson() {
     result["created_at"] = properties.created_at;
     return result;
 }
+
+Product& Product::operator--() {
+    this->properties.quantity -= 1;
+    return *this;
+}
+
+Product& Product::operator++() {
+    this->properties.quantity += 1;
+    return *this;
+}

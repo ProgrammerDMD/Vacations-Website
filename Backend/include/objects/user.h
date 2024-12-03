@@ -40,6 +40,10 @@ namespace Objects {
                             std::function<void(const drogon::orm::DrogonDbException&)>&& exceptionCallback);
 
         virtual Json::Value toJson();
+
+        bool operator==(User& user);
+
+
     };
 }
 

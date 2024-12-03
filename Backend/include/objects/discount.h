@@ -31,6 +31,10 @@ namespace Objects {
         long getExpiresAt();
 
         virtual Json::Value toJson();
+
+        bool operator>(const Discount& discount);
+
+        bool operator>=(const Discount& discount);
     };
 }
 
