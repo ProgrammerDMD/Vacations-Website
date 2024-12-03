@@ -29,6 +29,10 @@ add_executable(Backend
         include/routes/user.h
         src/objects/user.cpp
         src/routes/user.cpp
+        include/objects/room.h
+        src/objects/room.cpp
+        include/objects/package.h
+        src/objects/package.cpp
 )
 
 find_package(Drogon CONFIG REQUIRED)
